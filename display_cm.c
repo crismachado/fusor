@@ -493,7 +493,14 @@ static int32_t initialize(int32_t argc, char ** argv)
         return -1;
     }
 
-    // if in live mode then
+   //
+   //
+   // AJUSTAR PARA NAO LER DO SERVIDOR E ESPERAR A PRIMEIRA LEITURA
+   //
+   //
+   
+   
+   // if in live mode then
     //   get server address
     //   create thread to acquire data from server
     //   wait for first data to be received from server
@@ -503,13 +510,13 @@ static int32_t initialize(int32_t argc, char ** argv)
         // get address of server, 
         // print servername, and serveraddr
         ret =  getsockaddr(servername, PORT, &server_sockaddr);
-        if (ret < 0) {
-            ERROR("failed to get address of %s\n", servername);
-            return -1;
-        }
-        INFO("servername      = %s\n", servername);
-        INFO("serveraddr      = %s\n", 
-             sock_addr_to_str(s, sizeof(s), (struct sockaddr *)&server_sockaddr));
+        //CRIS if (ret < 0) {
+        //CRIS    ERROR("failed to get address of %s\n", servername);
+        //CRIS    return -1;
+        //CRIS }
+        //CRIS INFO("servername      = %s\n", servername);
+        //CRIS INFO("serveraddr      = %s\n", 
+        //CRIS      sock_addr_to_str(s, sizeof(s), (struct sockaddr *)&server_sockaddr));
 
         // create get_live_data_thread        
         if (pthread_create(&thread, NULL, get_live_data_thread, NULL)) {
@@ -518,16 +525,16 @@ static int32_t initialize(int32_t argc, char ** argv)
         }
 
         // wait for get_live_data_thread to get first data, tout 5 secs
-        wait_ms = 0;
-        while (file_idx_global == -1) {
-            wait_ms += 10;
-            usleep(10000);
-            if (wait_ms >= 5000) {
-                ERROR("failed to receive data from server\n");
-                unlink(filename);
-                return -1;
-            }
-        }
+        //CRIS wait_ms = 0;
+        //CRIS while (file_idx_global == -1) {
+        //CRIS     wait_ms += 10;
+        //CRIS     usleep(10000);
+        //CRIS     if (wait_ms >= 5000) {
+        //CRIS         ERROR("failed to receive data from server\n");
+        //CRIS         unlink(filename);
+        //CRIS         return -1;
+        //CRIS     }
+        //CRIS }
 
         // cam_init
         if (!opt_no_cam) {
@@ -575,6 +582,13 @@ static int32_t initialize(int32_t argc, char ** argv)
 
     // return success
     return 0;
+
+   //__________________________________________
+   //                                         |
+   // Aqui termina a parte do initialize      |
+   //                                         |
+   //_________________________________________|
+
 }
 
 static void usage(void)
@@ -613,6 +627,12 @@ static void atexit_config_write(void)
 }
 
 // -----------------  GET LIVE DATA THREAD  ------------------------------------------
+
+//
+//
+// AJUSTAR PARA NAO LER O SERVIDOR NA FUNÇAO get_live_data_thread
+//
+//------------------------------------------------------------------
 
 static void * get_live_data_thread(void * cx)
 {
@@ -921,6 +941,13 @@ static int32_t write_data_to_file(data_t * data)
     // return success
     return 0;
 }
+
+//
+//
+// FIM AJUSTE
+//
+//
+
 
 // -----------------  CAM THREAD  ----------------------------------------------------
 
