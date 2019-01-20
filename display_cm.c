@@ -18,6 +18,11 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+Copyright (c) 2019 Cristiano Machado
+Fiz ajustes para permitir que o mesmo programa rodasse sem utilizar a captura de dados dos leitores. No lugar disto faz a 
+leitura a partir do próprio Raspberry Pi, com as portas determinadas
+
 */
 
 #define _FILE_OFFSET_BITS 64
