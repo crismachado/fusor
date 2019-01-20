@@ -255,7 +255,7 @@ int32_t main(int32_t argc, char **argv)
     }
 
     INFO("terminating normally\n");
-    return 0; 
+    return 0;
 }
 
 // -----------------  INITIALIZE  ----------------------------------------------------
@@ -266,11 +266,12 @@ static int32_t initialize(int32_t argc, char ** argv)
 {
     struct rlimit      rl;
     pthread_t          thread;
-    int32_t            ret, len;
+    int32_t            ret;
+    int32_t 	       len;
     char               filename[100];
     char               servername[100];
-    char               s[100];
-    int32_t            wait_ms;
+//cris    char               s[100];
+//cris    int32_t            wait_ms;
     const char       * config_dir;
 
     // use line bufferring
@@ -299,7 +300,7 @@ static int32_t initialize(int32_t argc, char ** argv)
 
     // init locals
     strcpy(filename, "");
- 
+
     // parse options
     // -h          : help
     // -v          : version
@@ -335,7 +336,7 @@ static int32_t initialize(int32_t argc, char ** argv)
             break;
         case 'x':
             opt_no_cam = true;
-            break;  
+            break;
         case 't':
             mode = TEST;
             if (sscanf(optarg, "%d", &test_file_secs) != 1 || test_file_secs < 1 || test_file_secs > MAX_FILE_DATA_PART1) {
@@ -348,7 +349,7 @@ static int32_t initialize(int32_t argc, char ** argv)
         }
     }
 
-    // read config file, and 
+    // read config file, and
     // initialize exit handler to write config file
     config_dir = getenv("HOME");
     if (config_dir == NULL) {
@@ -366,14 +367,14 @@ static int32_t initialize(int32_t argc, char ** argv)
         sscanf(CONFIG_SUMMARY_GRAPH_TIME_SPAN_SEC, "%d", &summary_graph_time_span_sec) != 1 ||
         sscanf(CONFIG_FILE_IDX_PLAYBACK_INIT, "%ld", &file_idx_playback_init) != 1 ||
         sscanf(CONFIG_ADC_DATA_GRAPH_SELECT, "%d", &adc_data_graph_select) != 1 ||
-        sscanf(CONFIG_ADC_DATA_GRAPH_MAX_Y_MV, "%d", &adc_data_graph_max_y_mv) != 1) 
+        sscanf(CONFIG_ADC_DATA_GRAPH_MAX_Y_MV, "%d", &adc_data_graph_max_y_mv) != 1)
     {
         FATAL("invalid config value, not a number\n");
     }
     atexit(atexit_config_write);
 
-    // if mode is live or test then 
-    //   if filename was provided then 
+    // if mode is live or test then
+    //   if filename was provided then
     //     use the provided filename
     //   else if live mode then
     //     generate live mode filename
@@ -411,9 +412,9 @@ static int32_t initialize(int32_t argc, char ** argv)
     }
     memcpy(screenshot_prefix, filename, len-4);
 
-    // if mode is live or test then 
+    // if mode is live or test then
     //   verify filename does not exist
-    //   create and init the file  
+    //   create and init the file
     // endif
     if (mode == LIVE || mode == TEST) {
         // verify filename does not exist
@@ -423,7 +424,7 @@ static int32_t initialize(int32_t argc, char ** argv)
             return -1;
         }
 
-        // create and init the file  
+        // create and init the file
         file_hdr_t hdr;
         int32_t fd;
         fd = open(filename, O_CREAT|O_EXCL|O_RDWR, 0666);
@@ -456,7 +457,7 @@ static int32_t initialize(int32_t argc, char ** argv)
             return -1;
         }
     }
-    
+
     // open and map filename
     file_fd = open(filename, mode == PLAYBACK ? O_RDONLY : O_RDWR);
     if (file_fd < 0) {
@@ -488,7 +489,7 @@ static int32_t initialize(int32_t argc, char ** argv)
     if (file_hdr->magic != MAGIC_FILE ||
         file_hdr->max > MAX_FILE_DATA_PART1)
     {
-        ERROR("invalid file %s, magic=0x%"PRIx64" max=%d\n", 
+        ERROR("invalid file %s, magic=0x%"PRIx64" max=%d\n",
               filename, file_hdr->magic, file_hdr->max);
         return -1;
     }
@@ -498,8 +499,8 @@ static int32_t initialize(int32_t argc, char ** argv)
    // AJUSTAR PARA NAO LER DO SERVIDOR E ESPERAR A PRIMEIRA LEITURA
    //
    //
-   
-   
+
+
    // if in live mode then
     //   get server address
     //   create thread to acquire data from server
@@ -507,18 +508,18 @@ static int32_t initialize(int32_t argc, char ** argv)
     //   cam_init
     // endif
     if (mode == LIVE) {
-        // get address of server, 
+        // get address of server,
         // print servername, and serveraddr
-        ret =  getsockaddr(servername, PORT, &server_sockaddr);
+        //CRIS ret =  getsockaddr(servername, PORT, &server_sockaddr);
         //CRIS if (ret < 0) {
         //CRIS    ERROR("failed to get address of %s\n", servername);
         //CRIS    return -1;
         //CRIS }
         //CRIS INFO("servername      = %s\n", servername);
-        //CRIS INFO("serveraddr      = %s\n", 
+        //CRIS INFO("serveraddr      = %s\n",
         //CRIS      sock_addr_to_str(s, sizeof(s), (struct sockaddr *)&server_sockaddr));
 
-        // create get_live_data_thread        
+        // create get_live_data_thread
         if (pthread_create(&thread, NULL, get_live_data_thread, NULL)) {
             ERROR("pthread_create get_live_data_thread, %s\n", strerror(errno));
             return -1;
@@ -603,7 +604,7 @@ static void usage(void)
            "       -s name     : server name\n"
            "       -p filename : playback file\n"
            "       -x          : don't capture cam data in live mode\n"
-           "       -t secs     : generate test data file, secs long\n" 
+           "       -t secs     : generate test data file, secs long\n"
            "\n"
                     );
 }
@@ -630,38 +631,43 @@ static void atexit_config_write(void)
 
 //
 //
-// AJUSTAR PARA NAO LER O SERVIDOR NA FUNÇAO get_live_data_thread
+// AJUSTAR PARA NAO LER O SERVIDOR NA FUNÇAO get_live_data_thread e utilizar dados estaticos
 //
 //------------------------------------------------------------------
 
 static void * get_live_data_thread(void * cx)
 {
-    int32_t               sfd, len;
-    struct timeval        rcvto;
+    int32_t               sfd;
+//Cris    int32_t               len;
+//Cris    struct timeval        rcvto;
     data_t              * data;
     struct data_part1_s * dp1;
     struct data_part2_s * dp2;
     uint64_t              last_data_time_written_to_file;
-    uint64_t              t, time_now, time_delta;
+    uint64_t              t;
+//Cris    uint64_t 		  time_now, time_delta;
     data_t                data_novalue;
 
     // init data_novalue
     bzero(&data_novalue, sizeof(data_novalue));
 
+//
+// Ajustar para zero os dados padrao
+//
     dp1                                           = &data_novalue.part1;
     dp1->magic                                    = MAGIC_DATA_PART1;
     dp1->time                                     = 0;
-    dp1->voltage_kv                               = ERROR_NO_VALUE;
-    dp1->current_ma                               = ERROR_NO_VALUE;
-    dp1->d2_pressure_mtorr                        = ERROR_NO_VALUE;
-    dp1->n2_pressure_mtorr                        = ERROR_NO_VALUE;
+    dp1->voltage_kv                               = 0; //valor antigo: ERROR_NO_VALUE;
+    dp1->current_ma                               = 0; //valor antigo: ERROR_NO_VALUE;
+    dp1->d2_pressure_mtorr                        = 0; //valor antigo: ERROR_NO_VALUE;
+    dp1->n2_pressure_mtorr                        = 0; //valor antigo: ERROR_NO_VALUE;
     dp1->max_neutron_pulse                        = 0;
     dp1->data_part2_offset                        = 0;
     dp1->data_part2_length                        = sizeof(struct data_part2_s);
     dp1->data_part2_jpeg_buff_len                 = 0;
-    dp1->data_part2_voltage_adc_data_valid        = false;
-    dp1->data_part2_current_adc_data_valid        = false;
-    dp1->data_part2_pressure_adc_data_valid       = false;
+    dp1->data_part2_voltage_adc_data_valid        = true; //valor antigo: false;
+    dp1->data_part2_current_adc_data_valid        = true; //valor antigo: false;
+    dp1->data_part2_pressure_adc_data_valid       = true; //valor antigo: false;
 
     dp2                                           = &data_novalue.part2;
     dp2->magic                                    = MAGIC_DATA_PART2;
@@ -676,72 +682,87 @@ static void * get_live_data_thread(void * cx)
     dp2 = &data->part2;
     last_data_time_written_to_file = 0;
 
-try_to_connect_again:
-    // create socket 
-    sfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sfd == -1) {
-        FATAL("create socket, %s\n", strerror(errno));
-    }
+//
+//
+//
+// zerar as linhas de leitura do SERVIDOR
+//
+//
+
+//Cris try_to_connect_again:
+//Cris      // create socket
+//Cris     sfd = socket(AF_INET, SOCK_STREAM, 0);
+//Cris     if (sfd == -1) {
+//Cris         FATAL("create socket, %s\n", strerror(errno));
+//Cris     }
 
     // if failed to connect to the server then
     //   goto connection_failed
     // endif
-    if (connect(sfd, (struct sockaddr *)&server_sockaddr, sizeof(server_sockaddr)) < 0) {
-        char s[100];
-        ERROR("connect to %s, %s\n", 
-              sock_addr_to_str(s, sizeof(s), (struct sockaddr *)&server_sockaddr),
-              strerror(errno));
-        goto connection_failed;
-    }
-
-    // set recv timeout to 5 seconds
-    rcvto.tv_sec  = 5;
-    rcvto.tv_usec = 0;
-    if (setsockopt(sfd, SOL_SOCKET, SO_RCVTIMEO, (char *)&rcvto, sizeof(rcvto)) < 0) {
-        FATAL("setsockopt SO_RCVTIMEO, %s\n",strerror(errno));
-    }
+//Cris     if (connect(sfd, (struct sockaddr *)&server_sockaddr, sizeof(server_sockaddr)) < 0) {
+//Cris         char s[100];
+//Cris         ERROR("connect to %s, %s\n",
+//Cris               sock_addr_to_str(s, sizeof(s), (struct sockaddr *)&server_sockaddr),
+//Cris               strerror(errno));
+//Cris         goto connection_failed;
+//Cris     }
+//Cris
+//Cris     // set recv timeout to 5 seconds
+//Cris     rcvto.tv_sec  = 5;
+//Cris     rcvto.tv_usec = 0;
+//Cris     if (setsockopt(sfd, SOL_SOCKET, SO_RCVTIMEO, (char *)&rcvto, sizeof(rcvto)) < 0) {
+//Cris         FATAL("setsockopt SO_RCVTIMEO, %s\n",strerror(errno));
+//Cris     }
 
     // loop getting data
+    //
+    // Tem que manter o While aberto, pois algumas coisas sao feitas
+    //
+
     while (true) {
-        // read data part1 from server, and
-        // verify data part1 magic, and length
-        len = do_recv(sfd, dp1, sizeof(struct data_part1_s));
-        if (len != sizeof(struct data_part1_s)) {
-            ERROR("recv dp1 len=%d exp=%zd, %s\n",
-                  len, sizeof(struct data_part1_s), strerror(errno));
-            goto connection_failed;
-        }
-        if (dp1->magic != MAGIC_DATA_PART1) {
-            ERROR("recv dp1 bad magic 0x%"PRIx64"\n", 
-                  dp1->magic);
-            goto connection_failed;
-        }
-        if (dp1->data_part2_length > MAX_DATA_PART2_LENGTH) {
-            ERROR("data_part2_length %d is too big\n", 
-                  dp1->data_part2_length);
-            goto connection_failed;
-        }
+                //inclui a diretiva abaixo para enganar o sistema que está fazendo leituras
+                dp1->time++;
 
-        // read data part2 from server,
-        // verify magic
-        len = do_recv(sfd, dp2, dp1->data_part2_length);
-        if (len != dp1->data_part2_length) {
-            ERROR("recv dp2 len=%d exp=%d, %s\n",
-                  len, dp1->data_part2_length, strerror(errno));
-            goto connection_failed;
-        }
-        if (dp2->magic != MAGIC_DATA_PART2) {
-            ERROR("recv dp2 bad magic 0x%"PRIx64"\n", 
-                  dp2->magic);
-            goto connection_failed;
-        }
 
-        // got data part1 and part2 therefore connection is working
-        lost_connection = false;
+//Cris         // read data part1 from server, and
+//Cris         // verify data part1 magic, and length
+//Cris         len = do_recv(sfd, dp1, sizeof(struct data_part1_s));
+//Cris         if (len != sizeof(struct data_part1_s)) {
+//Cris             ERROR("recv dp1 len=%d exp=%zd, %s\n",
+//Cris                   len, sizeof(struct data_part1_s), strerror(errno));
+//Cris             goto connection_failed;
+//Cris         }
+//Cris         if (dp1->magic != MAGIC_DATA_PART1) {
+//Cris             ERROR("recv dp1 bad magic 0x%"PRIx64"\n",
+//Cris                   dp1->magic);
+//Cris             goto connection_failed;
+//Cris         }
+//Cris         if (dp1->data_part2_length > MAX_DATA_PART2_LENGTH) {
+//Cris             ERROR("data_part2_length %d is too big\n",
+//Cris                   dp1->data_part2_length);
+//Cris             goto connection_failed;
+//Cris         }
 
-        // if data part2 does not contain camera data then 
-        // see if the camera data is being captured by this program, 
-        // and add it
+//Cris         // read data part2 from server,
+//Cris         // verify magic
+//Cris         len = do_recv(sfd, dp2, dp1->data_part2_length);
+//Cris         if (len != dp1->data_part2_length) {
+//Cris             ERROR("recv dp2 len=%d exp=%d, %s\n",
+//Cris                   len, dp1->data_part2_length, strerror(errno));
+//Cris             goto connection_failed;
+//Cris         }
+//Cris         if (dp2->magic != MAGIC_DATA_PART2) {
+//Cris             ERROR("recv dp2 bad magic 0x%"PRIx64"\n",
+//Cris                   dp2->magic);
+//Cris             goto connection_failed;
+//Cris         }
+//Cris
+//Cris         // got data part1 and part2 therefore connection is working
+//Cris         lost_connection = false;
+
+//Cris         // if data part2 does not contain camera data then
+//Cris         // see if the camera data is being captured by this program,
+//Cris         // and add it
         if (dp1->data_part2_jpeg_buff_len == 0) {
             pthread_mutex_lock(&jpeg_mutex);
             if (microsec_timer() - jpeg_buff_us < 1000000) {
@@ -758,22 +779,21 @@ try_to_connect_again:
             dp1->data_part2_length = sizeof(struct data_part2_s);
         }
 
-        // verify the time of received data is close to the time 
-        // on the computer running this display program
-        time_now = time(NULL);
-        time_delta = (time_now > data->part1.time 
-                      ? time_now - data->part1.time
-                      : data->part1.time - time_now);
-        if (time_delta > 5) {
-            ERROR("server time delta = %"PRId64"\n", time_delta);
-            goto time_error;
-        }
+//Cris         // verify the time of received data is close to the time
+//Cris         // on the computer running this display program
+//Cris         time_now = time(NULL);
+//Cris         time_delta = (time_now > data->part1.time
+//Cris                       ? time_now - data->part1.time
+//Cris                       : data->part1.time - time_now);
+//Cris         if (time_delta > 5) {
+//Cris             goto time_error;
+//Cris         }
 
         // if this is the first write then
         //    write the data to file
         // else if data time <= last_data_time_written_to_file
         //    discard
-        // else 
+        // else
         //    write 'no-value' data if needed
         //    write data to file
         // endif
@@ -832,71 +852,76 @@ try_to_connect_again:
 #endif
     }
 
-connection_failed:
-    // handle connectio failed error ...
+//Cris connection_failed:
+//Cris     // handle connectio failed error ...
+//Cris
+//Cris     // set lost_connection flag,
+//Cris     // close socket
+//Cris     ERROR("connection_failed - attempting to reestablish connection\n");
+//Cris     lost_connection = true;
+//Cris     if (sfd != -1) {
+//Cris         close(sfd);
+//Cris         sfd = -1;
+//Cris     }
+//Cris
+//Cris     // write no-value data to file to fill the gap
+//Cris     if (last_data_time_written_to_file != 0) {
+//Cris         time_now = time(NULL);
+//Cris         for (t = last_data_time_written_to_file+1; t < time_now; t++) {
+//Cris             WARN("writing no-value data to file for time %"PRId64"\n", t);
+//Cris             data_novalue.part1.time = t;
+//Cris             if (write_data_to_file(&data_novalue) < 0) {
+//Cris                 goto file_error;
+//Cris             }
+//Cris             last_data_time_written_to_file = t;
+//Cris         }
+//Cris     }
+//Cris
+//Cris     // if live mode then update file_idx_global
+//Cris     if (mode == LIVE) {
+//Cris         file_idx_global = file_hdr->max - 1;
+//Cris         __sync_synchronize();
+//Cris     }
 
-    // set lost_connection flag,
-    // close socket
-    ERROR("connection_failed - attempting to reestablish connection\n");
-    lost_connection = true;
-    if (sfd != -1) {
-        close(sfd);
-        sfd = -1;
-    }
-
-    // write no-value data to file to fill the gap
-    if (last_data_time_written_to_file != 0) {
-        time_now = time(NULL);
-        for (t = last_data_time_written_to_file+1; t < time_now; t++) {
-            WARN("writing no-value data to file for time %"PRId64"\n", t);
-            data_novalue.part1.time = t;
-            if (write_data_to_file(&data_novalue) < 0) {
-                goto file_error;
-            }
-            last_data_time_written_to_file = t;
-        }
-    }
-
-    // if live mode then update file_idx_global
-    if (mode == LIVE) {
-        file_idx_global = file_hdr->max - 1;
-        __sync_synchronize();
-    }
-
-    // sleep 1 sec, 
-    // and try to connect again
-    sleep(1);
-    goto try_to_connect_again;
+//Cris     // sleep 1 sec,
+//Cris     // and try to connect again
+//Cris     sleep(1);
+//Cris     goto try_to_connect_again;
 
 file_error:
     // handle file error ...
 
-    // this program can not continue receiving data because the program 
+    // this program can not continue receiving data because the program
     // relies on being able to read data from the file, so set error flags
     // and exit this thread
-    ERROR("file error - get_live_data_thread terminating\n");
-    lost_connection = true;
-    file_error = true;
-    if (sfd != -1) {
-        close(sfd);
-        sfd = -1;
-    }
+     ERROR("file error - get_live_data_thread terminating\n");
+     lost_connection = true;
+     file_error = true;
+     if (sfd != -1) {
+         close(sfd);
+         sfd = -1;
+     }
     return NULL;
 
-time_error:
-    // handle time error ...
+//Cris time_error:
+//Cris     // handle time error ...
 
-    // this program requires the time on the server to be 
-    // reasonably well synced with the time on the computer running 
+    // this program requires the time on the server to be
+    // reasonably well synced with the time on the computer running
     // the display program; if not then exit this thread
-    ERROR("time error - get_live_data_thread terminating\n");
-    lost_connection = true;
-    time_error = true;
-    if (sfd != -1) {
-        close(sfd);
-        sfd = -1;
-    }
-    return NULL;
+//Cris     ERROR("time error - get_live_data_thread terminating\n");
+//Cris     lost_connection = true;
+//Cris     time_error = true;
+//Cris     if (sfd != -1) {
+//Cris         close(sfd);
+//Cris         sfd = -1;
+//Cris     }
+//Cris     return NULL;
+
+//__________________________________________
+// Fim da funcao
+//__________________________________________
+
 }
 
 static int32_t write_data_to_file(data_t * data)
@@ -922,7 +947,7 @@ static int32_t write_data_to_file(data_t * data)
     // save file data_part2_offset in data part1
     data->part1.data_part2_offset = data_part2_offset;
 
-    // write data_part1 to file (file_data_part1 is memory mapped to the file)              
+    // write data_part1 to file (file_data_part1 is memory mapped to the file)
     file_data_part1[file_hdr->max] = data->part1;
 
     // write data_part2 to file
@@ -1002,7 +1027,7 @@ static int32_t display_handler(void)
 
     bool          quit;
     sdl_event_t * event;
-    rect_t        title_pane_full, title_pane; 
+    rect_t        title_pane_full, title_pane;
     rect_t        cam_pane_full, cam_pane;
     rect_t        data_pane_full, data_pane;
     rect_t        summary_graph_pane_full, summary_graph_pane;
@@ -1019,7 +1044,7 @@ static int32_t display_handler(void)
     int32_t       playback_speed;
     uint64_t      playback_advance_us;
 
-    // initializae 
+    // initializae
     quit = false;
     file_max_last = -1;
     lost_connection_msg_is_displayed = false;
@@ -1035,19 +1060,19 @@ static int32_t display_handler(void)
 
     sdl_get_state(&win_width, &win_height, NULL);
 
-    sdl_init_pane(&title_pane_full, &title_pane, 
-                  0, 0, 
+    sdl_init_pane(&title_pane_full, &title_pane,
+                  0, 0,
                   win_width, FONT0_HEIGHT+4);
-    sdl_init_pane(&cam_pane_full, &cam_pane, 
-                  0, FONT0_HEIGHT+2, 
-                  CAM_HEIGHT+4, CAM_HEIGHT+4); 
-    sdl_init_pane(&data_pane_full, &data_pane, 
-                  CAM_HEIGHT+2, FONT0_HEIGHT+2, 
-                  win_width-(CAM_HEIGHT+2), 2*FONT1_HEIGHT+4); 
-    sdl_init_pane(&summary_graph_pane_full, &summary_graph_pane, 
+    sdl_init_pane(&cam_pane_full, &cam_pane,
+                  0, FONT0_HEIGHT+2,
+                  CAM_HEIGHT+4, CAM_HEIGHT+4);
+    sdl_init_pane(&data_pane_full, &data_pane,
+                  CAM_HEIGHT+2, FONT0_HEIGHT+2,
+                  win_width-(CAM_HEIGHT+2), 2*FONT1_HEIGHT+4);
+    sdl_init_pane(&summary_graph_pane_full, &summary_graph_pane,
                   0, FONT0_HEIGHT+CAM_HEIGHT+4,
                   win_width, win_height-(FONT0_HEIGHT+CAM_HEIGHT+4));
-    sdl_init_pane(&adc_data_graph_pane_full, &adc_data_graph_pane, 
+    sdl_init_pane(&adc_data_graph_pane_full, &adc_data_graph_pane,
                   CAM_HEIGHT+2,
                   FONT0_HEIGHT+2*FONT1_HEIGHT+4,
                   win_width - (CAM_HEIGHT+2),
@@ -1061,7 +1086,7 @@ static int32_t display_handler(void)
         __sync_synchronize();
         if (file_idx < 0 ||
             file_idx >= file_hdr->max ||
-            file_data_part1[file_idx].magic != MAGIC_DATA_PART1) 
+            file_data_part1[file_idx].magic != MAGIC_DATA_PART1)
         {
             FATAL("invalid file_idx %d, max =%d\n",
                   file_idx, file_hdr->max);
@@ -1071,7 +1096,7 @@ static int32_t display_handler(void)
         // initialize for display update
         sdl_display_init();
 
-        // draw pane borders   
+        // draw pane borders
         sdl_render_pane_border(&title_pane_full, GREEN);
         sdl_render_pane_border(&cam_pane_full,   GREEN);
         sdl_render_pane_border(&data_pane_full,  GREEN);
@@ -1079,9 +1104,9 @@ static int32_t display_handler(void)
         sdl_render_pane_border(&adc_data_graph_pane_full, GREEN);
 
         // draw title line
-        // 
-        // 0         1         2         3         4         5         6         7        
-        // 0123456789 123456789 123456789 123456789 123456789 123456789 123456789 
+        //
+        // 0         1         2         3         4         5         6         7
+        // 0123456789 123456789 123456789 123456789 123456789 123456789 123456789
         // PLAYBACK_PAUSED  yy/mm/dd hh:mm:ss  LOST_CONN    FILE_ERROR   TIME_ERROR    ...  (?) (SHIFT-ESC)
         // ^                ^                  ^            ^            ^                  ^   ^         ^
         // 0                17                 36           49           62                -15  -11       -1
@@ -1097,7 +1122,7 @@ static int32_t display_handler(void)
             }
             sdl_render_text(&title_pane, 0, 0, 0, playback_mode_str, RED, BLACK);
         }
-            
+
         t = file_data_part1[file_idx].time;
         tm = localtime(&t);
         sprintf(str, "%d/%d/%d %2.2d:%2.2d:%2.2d",
@@ -1129,7 +1154,7 @@ static int32_t display_handler(void)
         sdl_render_text(&title_pane, 0, -11, 0, "(SHIFT-ESC)", WHITE, BLACK);
 
         sdl_render_text(&title_pane, 0, -15, 0, "(?)", WHITE, BLACK);
-        
+
         // draw the camera image,
         draw_camera_image(&cam_pane, file_idx);
 
@@ -1142,21 +1167,21 @@ static int32_t display_handler(void)
         // draw the adc data graph
         draw_adc_data_graph(&adc_data_graph_pane, file_idx);
 
-        // register for events   
+        // register for events
         sdl_event_register(SDL_EVENT_KEY_SHIFT_ESC, SDL_EVENT_TYPE_KEY, NULL);       // quit (shift-esc key)
         sdl_event_register('?', SDL_EVENT_TYPE_KEY, NULL);                           // help
-        sdl_event_register(SDL_EVENT_KEY_LEFT_ARROW, SDL_EVENT_TYPE_KEY, NULL);      // summary graph cursor 
+        sdl_event_register(SDL_EVENT_KEY_LEFT_ARROW, SDL_EVENT_TYPE_KEY, NULL);      // summary graph cursor
         sdl_event_register(SDL_EVENT_KEY_RIGHT_ARROW, SDL_EVENT_TYPE_KEY, NULL);
         sdl_event_register(SDL_EVENT_KEY_CTRL_LEFT_ARROW, SDL_EVENT_TYPE_KEY, NULL);
-        sdl_event_register(SDL_EVENT_KEY_CTRL_RIGHT_ARROW, SDL_EVENT_TYPE_KEY, NULL); 
+        sdl_event_register(SDL_EVENT_KEY_CTRL_RIGHT_ARROW, SDL_EVENT_TYPE_KEY, NULL);
         sdl_event_register(SDL_EVENT_KEY_ALT_LEFT_ARROW, SDL_EVENT_TYPE_KEY, NULL);
         sdl_event_register(SDL_EVENT_KEY_ALT_RIGHT_ARROW, SDL_EVENT_TYPE_KEY, NULL);
         sdl_event_register(SDL_EVENT_KEY_HOME, SDL_EVENT_TYPE_KEY, NULL);
         sdl_event_register(SDL_EVENT_KEY_END, SDL_EVENT_TYPE_KEY, NULL);
-        sdl_event_register('+', SDL_EVENT_TYPE_KEY, NULL);                           // summary graph x scale 
+        sdl_event_register('+', SDL_EVENT_TYPE_KEY, NULL);                           // summary graph x scale
         sdl_event_register('=', SDL_EVENT_TYPE_KEY, NULL);
         sdl_event_register('-', SDL_EVENT_TYPE_KEY, NULL);
-        sdl_event_register('s', SDL_EVENT_TYPE_KEY, NULL);                           // adc data graph select 
+        sdl_event_register('s', SDL_EVENT_TYPE_KEY, NULL);                           // adc data graph select
         sdl_event_register('1', SDL_EVENT_TYPE_KEY, NULL);                           // adc data graph y scale
         sdl_event_register('2', SDL_EVENT_TYPE_KEY, NULL);
         sdl_event_register('a', SDL_EVENT_TYPE_KEY, NULL);                           // camera image position & zoom
@@ -1165,7 +1190,7 @@ static int32_t display_handler(void)
         sdl_event_register('x', SDL_EVENT_TYPE_KEY, NULL);
         sdl_event_register('z', SDL_EVENT_TYPE_KEY, NULL);
         sdl_event_register('Z', SDL_EVENT_TYPE_KEY, NULL);
-        sdl_event_register('r', SDL_EVENT_TYPE_KEY, NULL);                             
+        sdl_event_register('r', SDL_EVENT_TYPE_KEY, NULL);
         sdl_event_register('3', SDL_EVENT_TYPE_KEY, NULL);                           // adjust neutron pulse height thresh
         sdl_event_register('4', SDL_EVENT_TYPE_KEY, NULL);
         sdl_event_register('5', SDL_EVENT_TYPE_KEY, NULL);                           // adjust neutron summary graph scale
@@ -1191,22 +1216,22 @@ static int32_t display_handler(void)
             event_processed_count++;
             event = sdl_poll_event();
             switch (event->event) {
-            case SDL_EVENT_QUIT: case SDL_EVENT_KEY_SHIFT_ESC: 
+            case SDL_EVENT_QUIT: case SDL_EVENT_KEY_SHIFT_ESC:
                 quit = true;
                 break;
             case SDL_EVENT_SCREENSHOT_TAKEN: {
                 // set screen white for 1 second
                 rect_t screen_pane, dummy_pane;
                 rect_t rect = {0,0,win_width,win_height};
-                sdl_init_pane(&screen_pane, &dummy_pane, 
-                            0, 0, 
+                sdl_init_pane(&screen_pane, &dummy_pane,
+                            0, 0,
                             win_width, win_height);
                 sdl_display_init();
                 sdl_render_fill_rect(&screen_pane, &rect, WHITE);
                 sdl_display_present();
                 usleep(250000);
                 break; }
-            case '?':  
+            case '?':
                 sdl_display_text(about);
                 SET_PLAYBACK_PAUSED;
                 break;
@@ -1264,8 +1289,8 @@ static int32_t display_handler(void)
                 int32_t delta;
                 delta = (neutron_pht_mv < 500  ? 1  :
                          neutron_pht_mv < 1000 ? 5  :
-                         neutron_pht_mv < 2000 ? 10 : 
-                         neutron_pht_mv < 3000 ? 20 : 
+                         neutron_pht_mv < 2000 ? 10 :
+                         neutron_pht_mv < 3000 ? 20 :
                                                  100);
                 if (event->event == '3') {
                     neutron_pht_mv -= delta;
@@ -1277,14 +1302,14 @@ static int32_t display_handler(void)
                     if (neutron_pht_mv > 10000) {
                         neutron_pht_mv = 10000;
                     }
-                } 
+                }
                 break; }
             case '5': case '6': {
                 int32_t delta;
                 delta = (neutron_scale_cpm < 500  ? 1  :
                          neutron_scale_cpm < 1000 ? 5  :
-                         neutron_scale_cpm < 2000 ? 10 : 
-                         neutron_scale_cpm < 3000 ? 20 : 
+                         neutron_scale_cpm < 2000 ? 10 :
+                         neutron_scale_cpm < 3000 ? 20 :
                                                     100);
                 if (event->event == '5') {
                     neutron_scale_cpm -= delta;
@@ -1296,7 +1321,7 @@ static int32_t display_handler(void)
                     if (neutron_scale_cpm > 10000) {
                         neutron_scale_cpm = 10000;
                     }
-                } 
+                }
                 break; }
             case '>': case '.':
                 if (mode == PLAYBACK && playback_speed < MAX_PLAYBACK_SPEED) {
@@ -1361,7 +1386,7 @@ static int32_t display_handler(void)
     return 0;
 }
 
-// - - - - - - - - -  DISPLAY HANDLER - DRAW CAMERA IMAGE  - - - - - - - - - - - - - - 
+// - - - - - - - - -  DISPLAY HANDLER - DRAW CAMERA IMAGE  - - - - - - - - - - - - - -
 
 static void draw_camera_image(rect_t * cam_pane, int32_t file_idx)
 {
@@ -1386,7 +1411,7 @@ static void draw_camera_image(rect_t * cam_pane, int32_t file_idx)
         image_size_last = image_size;
     }
 
-    // if no jpeg buff then 
+    // if no jpeg buff then
     //   display 'no image'
     //   return
     // endif
@@ -1396,10 +1421,10 @@ static void draw_camera_image(rect_t * cam_pane, int32_t file_idx)
         errstr = "NO IMAGE";
         goto error;
     }
-    
+
     // decode the jpeg buff contained in data_part2
     ret = jpeg_decode(0,  // cxid
-                     JPEG_DECODE_MODE_YUY2,      
+                     JPEG_DECODE_MODE_YUY2,
                      data_part2->jpeg_buff, file_data_part1[file_idx].data_part2_jpeg_buff_len,
                      &pixel_buff, &pixel_buff_width, &pixel_buff_height);
     if (ret < 0) {
@@ -1417,7 +1442,7 @@ static void draw_camera_image(rect_t * cam_pane, int32_t file_idx)
     skip_cols = image_x - image_size/2;
     skip_rows = image_y - image_size/2;
     sdl_update_yuy2_texture(
-        cam_texture, 
+        cam_texture,
         pixel_buff + (skip_rows * CAM_WIDTH * 2) + (skip_cols * 2),
         CAM_WIDTH);
     sdl_render_texture(cam_texture, cam_pane);
@@ -1426,7 +1451,7 @@ static void draw_camera_image(rect_t * cam_pane, int32_t file_idx)
     // return
     return;
 
-    // error  
+    // error
 error:
     sdl_render_text(cam_pane, 2, 1, 1, errstr, WHITE, BLACK);
     return;
@@ -1436,22 +1461,22 @@ static void draw_camera_image_control(char key)
 {
     // adjust image_x. image_y, image_size
     switch (key) {
-    case 'a': 
+    case 'a':
         image_x += 2;
         break;
-    case 'd': 
+    case 'd':
         image_x -= 2;
         break;
-    case 'w': 
+    case 'w':
         image_y += 2;
         break;
-    case 'x': 
+    case 'x':
         image_y -= 2;
         break;
-    case 'z': 
+    case 'z':
         image_size += 4;
         break;
-    case 'Z': 
+    case 'Z':
         image_size -= 4;
         break;
     case 'r':
@@ -1486,7 +1511,7 @@ static void draw_camera_image_control(char key)
     DEBUG("sanitized image_x=%d image_y=%d image_size=%d\n", image_x, image_y, image_size);
 }
 
-// - - - - - - - - -  DISPLAY HANDLER - DRAW DATA VALUES  - - - - - - - - - - - - - - 
+// - - - - - - - - -  DISPLAY HANDLER - DRAW DATA VALUES  - - - - - - - - - - - - - -
 
 static void draw_data_values(rect_t * data_pane, int32_t file_idx)
 {
@@ -1508,7 +1533,7 @@ static void draw_data_values(rect_t * data_pane, int32_t file_idx)
     sdl_render_text(data_pane, 1, 0, 1, str, WHITE, BLACK);
 }
 
-// - - - - - - - - -  DISPLAY HANDLER - DRAW SUMMARY GRAPH  - - - - - - - - - - - - 
+// - - - - - - - - -  DISPLAY HANDLER - DRAW SUMMARY GRAPH  - - - - - - - - - - - -
 
 // #define GRAPH_N2_PRESSURE
 
@@ -1529,7 +1554,7 @@ static void draw_summary_graph(rect_t * graph_pane, int32_t file_idx)
     char     x_info_str[100];
     char     cursor_str[100];
 
-    // init x_info_str 
+    // init x_info_str
     sprintf(x_info_str, "X: %d SEC", summary_graph_time_span_sec);
 
     // init file_idx_start & file_idx_end
@@ -1553,7 +1578,7 @@ static void draw_summary_graph(rect_t * graph_pane, int32_t file_idx)
                                                ? file_data_part1[i].voltage_kv
                                                : ERROR_NO_VALUE;
         current_ma_values[max_values]        = (i >= 0 && i < file_hdr->max)
-                                                ? file_data_part1[i].current_ma      
+                                                ? file_data_part1[i].current_ma
                                                 : ERROR_NO_VALUE;
         neutron_cpm_values[max_values]       = (i >= 0 && i < file_hdr->max)
                                                 ? neutron_cpm(i)
@@ -1574,12 +1599,12 @@ static void draw_summary_graph(rect_t * graph_pane, int32_t file_idx)
     double ns = neutron_scale_cpm;
 #ifdef GRAPH_N2_PRESSURE
     draw_graph_common(
-        graph_pane, 
-        "SUMMARY", 
-        1200,   
-        6, 
-        x_info_str, NULL, 
-        cursor_pos, cursor_str, 
+        graph_pane,
+        "SUMMARY",
+        1200,
+        6,
+        x_info_str, NULL,
+        cursor_pos, cursor_str,
         5,
         val2str(voltage_kv_values[i],UNITS_KV),           RED,             50., max_values, voltage_kv_values,
         val2str(current_ma_values[i],UNITS_MA),           GREEN,           50., max_values, current_ma_values,
@@ -1588,12 +1613,12 @@ static void draw_summary_graph(rect_t * graph_pane, int32_t file_idx)
         val2str(n2_pressure_mtorr_values[i],UNITS_N2_MT), LIGHT_BLUE, 1000000., max_values, n2_pressure_mtorr_values);
 #else
     draw_graph_common(
-        graph_pane, 
-        "SUMMARY", 
-        1200,   
-        6, 
-        x_info_str, NULL, 
-        cursor_pos, cursor_str, 
+        graph_pane,
+        "SUMMARY",
+        1200,
+        6,
+        x_info_str, NULL,
+        cursor_pos, cursor_str,
         4,
         val2str(voltage_kv_values[i],UNITS_KV),           RED,             50., max_values, voltage_kv_values,
         val2str(current_ma_values[i],UNITS_MA),           GREEN,           50., max_values, current_ma_values,
@@ -1609,7 +1634,7 @@ static void draw_summary_graph_control(char key)
     static uint32_t time_span_sec_tbl[] = { 60, 300, 600, 1200, 1800, 3600 };
 
     switch (key) {
-    case '-': 
+    case '-':
         REDUCE(summary_graph_time_span_sec, time_span_sec_tbl);
         break;
     case '+': case '=':
@@ -1621,7 +1646,7 @@ static void draw_summary_graph_control(char key)
     }
 }
 
-// - - - - - - - - -  DISPLAY HANDLER - DRAW ADC DATA GRAPH - - - - - - - - - - - - 
+// - - - - - - - - -  DISPLAY HANDLER - DRAW ADC DATA GRAPH - - - - - - - - - - - -
 
 static void draw_adc_data_graph(rect_t * graph_pane, int32_t file_idx)
 {
@@ -1733,7 +1758,7 @@ static void draw_adc_data_graph(rect_t * graph_pane, int32_t file_idx)
         "1 SECOND", NULL,  // x_info_str, y_info_str
         -1, NULL,          // cursor_pos, cursor_str
         1,                 // max_graph
-        NULL, color, (double)adc_data_graph_max_y_mv, MAX_ADC_DATA, adc_data); 
+        NULL, color, (double)adc_data_graph_max_y_mv, MAX_ADC_DATA, adc_data);
                            // name,color,y_max,max_values,values
 }
 
@@ -1757,10 +1782,10 @@ static void draw_adc_data_graph_control(char key)
     }
 }
 
-// - - - - - - - - -  DISPLAY HANDLER - DRAW GRAPH COMMON   - - - - - - - - - - - - 
+// - - - - - - - - -  DISPLAY HANDLER - DRAW GRAPH COMMON   - - - - - - - - - - - -
 
 static void draw_graph_common(
-    rect_t * graph_pane,   // the pane    
+    rect_t * graph_pane,   // the pane
     char * title_str,      // OPTIONAL graph title, displayed on top line centered above x axis
     int32_t x_range_param, // length of the X axis, in pixels
     int32_t str_col,       // controls the loc of the g->name, and x/y_info_str; 0 is at right end of X axis
@@ -1774,7 +1799,7 @@ static void draw_graph_common(
     // variable arg list ...
     // - char * name
     // - int32_t color
-    // - double  y_max     
+    // - double  y_max
     // - int32_t max_values
     // - float * values
     // - ... repeat for next graph ...
@@ -1802,7 +1827,7 @@ static void draw_graph_common(
         float   * values;
     } graph[20];
 
-    // get the variable args 
+    // get the variable args
     va_start(ap, max_graph);
     for (i = 0; i < max_graph; i++) {
         graph[i].name       = va_arg(ap, char*);
@@ -1886,42 +1911,42 @@ static void draw_graph_common(
 
         // draw the graph name
         if (g->name) {
-            name_str_col = (x_range + x_origin) / FONT0_WIDTH + str_col;    
+            name_str_col = (x_range + x_origin) / FONT0_WIDTH + str_col;
             if (g->y_max >= 1) {
                 sprintf(name_str, "%-13s  (%.0f MAX)", g->name, g->y_max);
             } else {
                 sprintf(name_str, "%-13s  (%.2f MAX)", g->name, g->y_max);
             }
-            sdl_render_text(graph_pane, gridx+1, name_str_col, 0, 
+            sdl_render_text(graph_pane, gridx+1, name_str_col, 0,
                             name_str, g->color, WHITE);
         }
     }
 
     // draw x axis
-    sdl_render_line(graph_pane, 
-                    x_origin, y_origin+1, 
+    sdl_render_line(graph_pane,
+                    x_origin, y_origin+1,
                     x_origin+x_range, y_origin+1,
                     BLACK);
-    sdl_render_line(graph_pane, 
-                    x_origin, y_origin+2, 
+    sdl_render_line(graph_pane,
+                    x_origin, y_origin+2,
                     x_origin+x_range, y_origin+2,
                     BLACK);
-    sdl_render_line(graph_pane, 
-                    x_origin, y_origin+3, 
+    sdl_render_line(graph_pane,
+                    x_origin, y_origin+3,
                     x_origin+x_range, y_origin+3,
                     BLACK);
 
     // draw y axis
-    sdl_render_line(graph_pane, 
-                    x_origin-1, y_origin+3, 
+    sdl_render_line(graph_pane,
+                    x_origin-1, y_origin+3,
                     x_origin-1, y_origin-y_range,
                     BLACK);
-    sdl_render_line(graph_pane, 
-                    x_origin-2, y_origin+3, 
+    sdl_render_line(graph_pane,
+                    x_origin-2, y_origin+3,
                     x_origin-2, y_origin-y_range,
                     BLACK);
-    sdl_render_line(graph_pane, 
-                    x_origin-3, y_origin+3, 
+    sdl_render_line(graph_pane,
+                    x_origin-3, y_origin+3,
                     x_origin-3, y_origin-y_range,
                     BLACK);
 
@@ -1952,13 +1977,13 @@ static void draw_graph_common(
                         0, title_str, BLACK, WHITE);
     }
     if (x_info_str != NULL) {
-        info_str_col = (x_range + x_origin) / FONT0_WIDTH + str_col;    
+        info_str_col = (x_range + x_origin) / FONT0_WIDTH + str_col;
         sdl_render_text(graph_pane,
                         -1, info_str_col,
                         0, x_info_str, BLACK, WHITE);
     }
     if (y_info_str != NULL) {
-        info_str_col = (x_range + x_origin) / FONT0_WIDTH + str_col;    
+        info_str_col = (x_range + x_origin) / FONT0_WIDTH + str_col;
         sdl_render_text(graph_pane,
                         -2, info_str_col,
                         0, y_info_str, BLACK, WHITE);
@@ -1967,7 +1992,7 @@ static void draw_graph_common(
 
 // -----------------  GENERATE TEST FILE----------------------------------------------
 
-static int32_t generate_test_file(void) 
+static int32_t generate_test_file(void)
 {
     time_t                t;
     uint8_t               jpeg_buff[200000];
@@ -2062,7 +2087,7 @@ static int32_t generate_test_file(void)
     return 0;
 }
 
-// -----------------  SUPPORT  ------------------------------------------------------ 
+// -----------------  SUPPORT  ------------------------------------------------------
 
 static char * val2str(float val, int32_t units)
 {
@@ -2103,7 +2128,7 @@ static char * val2str(float val, int32_t units)
         break;
     }
 
-    // pick a static str to use 
+    // pick a static str to use
     str = str_tbl[idx];
     idx = (idx + 1) % 20;
 
@@ -2130,7 +2155,7 @@ struct data_part2_s * read_data_part2(int32_t file_idx)
     static int32_t               last_read_file_idx = -1;
     static struct data_part2_s * last_read_data_part2 = NULL;
 
-    // initial allocate 
+    // initial allocate
     if (last_read_data_part2 == NULL) {
         last_read_data_part2 = calloc(1,MAX_DATA_PART2_LENGTH);
         if (last_read_data_part2 == NULL) {
@@ -2161,7 +2186,7 @@ struct data_part2_s * read_data_part2(int32_t file_idx)
 
     // verify magic value in data_part2
     if (last_read_data_part2->magic != MAGIC_DATA_PART2) {
-        FATAL("invalid data_part2 magic 0x%"PRIx64" at file_idx %d\n", 
+        FATAL("invalid data_part2 magic 0x%"PRIx64" at file_idx %d\n",
               last_read_data_part2->magic, file_idx);
     }
 
@@ -2245,4 +2270,3 @@ static float neutron_cpm(int32_t file_idx)
     // return the cached average cpm value
     return neutron_cpm_average_cache[file_idx];
 }
-
